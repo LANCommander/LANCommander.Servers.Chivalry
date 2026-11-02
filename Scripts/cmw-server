@@ -1,0 +1,57 @@
+#!/bin/sh
+# Start the Chivalry: Medieval Warfare dedicated server (START_EXE).
+#
+# Runs Binaries/Linux/UDKGameServer-Linux with the URL
+#   <map>[?steamsockets]?Port=<CMW_PORT>?QueryPort=<CMW_QUERY_PORT>[?<CMW_URL_OPTIONS>]
+# and -seekfreeloadingserver, then CMW_EXTRA_ARGS and START_ARGS. Everything else (server name,
+# passwords, map rotation) is in UDKGame/Config/PCServer-UDKGame.ini, written by the
+# 30-ConfigureChivalry hook.
+set -e
+
+root="${SERVER_ROOT:-/config/Merged}"
+bin="$root/Binaries/Linux"
+
+if [ ! -x "$bin/UDKGameServer-Linux" ]; then
+    echo "Binaries/Linux/UDKGameServer-Linux not found in $root; the SteamCMD install did not finish." >&2
+    exit 1
+fi
+
+# The Linux build keeps its config (and would keep logs) in ~/.local/share/TornBanner/Chivalry/UDKGame
+# instead of the install dir. Point that at the merged server directory so the server reads the
+# ini the hook wrote, and its own changes land in Overlay/.
+if [ -z "$HOME" ] || ! mkdir -p "$HOME/.local/share/TornBanner" 2>/dev/null; then
+    export HOME=/tmp/cmw-home
+    mkdir -p "$HOME/.local/share/TornBanner"
+fi
+data="$HOME/.local/share/TornBanner/Chivalry"
+if [ "$(readlink "$data" 2>/dev/null)" != "$root" ]; then
+    rm -rf "$data"
+    ln -s "$root" "$data"
+fi
+
+# Server libraries: bundled ones in Binaries/Linux/lib, steamclient.so in the install root
+export LD_LIBRARY_PATH="$bin/lib:$root${LD_LIBRARY_PATH:+:$LD_LIBRARY_PATH}"
+
+# Map: CMW_MAP, else the first map of CMW_MAPS
+map="$CMW_MAP"
+if [ -z "$map" ] && [ -n "$CMW_MAPS" ]; then
+    map=$(echo "$CMW_MAPS" | tr ',;' '  ' | awk '{print $1}')
+fi
+map="${map:-AOCTO-Hillside_P}"
+
+url="$map"
+case "$CMW_STEAM_SOCKETS" in
+    true|1|yes) url="$url?steamsockets" ;;
+esac
+url="$url?Port=${CMW_PORT:-7777}?QueryPort=${CMW_QUERY_PORT:-27015}"
+[ -z "$CMW_URL_OPTIONS" ] || url="$url?${CMW_URL_OPTIONS#\?}"
+
+# CMW_EXTRA_ARGS is split on whitespace
+# shellcheck disable=SC2086
+set -- "$url" -seekfreeloadingserver $CMW_EXTRA_ARGS "$@"
+
+echo "Starting: UDKGameServer-Linux $*"
+echo "The server prints almost nothing to the console. It is ready when it answers on UDP ${CMW_PORT:-7777}, after the map loads (about a minute)."
+
+cd "$bin"
+exec ./UDKGameServer-Linux "$@"
