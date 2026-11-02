@@ -11,7 +11,7 @@ This Docker container runs a Chivalry: Medieval Warfare dedicated server. It is 
 ```yaml
 services:
   chivalry:
-    image: lancommander/chivalrymedievalwarfare:latest
+    image: lancommander/chivalry:latest
     container_name: chivalry
 
     ports:

@@ -17,7 +17,7 @@ The image builds on [`lancommander/steamcmd`](https://github.com/LANCommander/LA
 ```yaml
 services:
   chivalry:
-    image: lancommander/chivalrymedievalwarfare:latest
+    image: lancommander/chivalry:latest
     container_name: chivalry
 
     ports:
@@ -99,7 +99,7 @@ See [Documentation/Docker.md](Documentation/Docker.md) for more detail.
 The image is built `FROM lancommander/steamcmd:latest` by default. To build against a local base image:
 
 ```bash
-docker build --build-arg BASE_IMAGE=lancommander/steamcmd:local -t lancommander/chivalrymedievalwarfare:local .
+docker build --build-arg BASE_IMAGE=lancommander/steamcmd:local -t lancommander/chivalry:local .
 ```
 
 ---

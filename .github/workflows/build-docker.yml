@@ -4,9 +4,9 @@ on:
   workflow_dispatch:
     inputs:
       image_name:
-        description: "Docker Hub image name (e.g., lancommander/chivalrymedievalwarfare)"
+        description: "Docker Hub image name (e.g., lancommander/chivalry)"
         required: true
-        default: "lancommander/chivalrymedievalwarfare"
+        default: "lancommander/chivalry"
       version:
         description: "Version tag for the image"
         required: true
@@ -56,7 +56,7 @@ jobs:
             # Set this to your preferred repo, or replace with a repo secret if you prefer.
             IMAGE_NAME="${{ vars.DOCKERHUB_IMAGE_NAME }}"
             if [[ -z "${IMAGE_NAME}" ]]; then
-              echo "DOCKERHUB_IMAGE_NAME variable is not set. Create it (e.g., 'lancommander/chivalrymedievalwarfare') or use workflow_dispatch."
+              echo "DOCKERHUB_IMAGE_NAME variable is not set. Create it (e.g., 'lancommander/chivalry') or use workflow_dispatch."
               exit 1
             fi
 
